@@ -224,3 +224,33 @@ expires: Wed, 11 Sep 2019 16:12:18 GMT
 cache-control: max-age=31536000
 它用过设置一个时间长度而不是具体时间从而规避了expires带来的问题，当两个字段同时存在时，cache-control优先度更高
 
+cache-control的特殊取值: no-cache和no-store
+前者绕开浏览器，直接向服务端去确认资源是否过期（即走协商缓存路线）
+后者更无情，顾名思义是不适用任何缓存策略，在 no-cache 的基础上，它连服务端的缓存确认也绕开了，只允许你直接向服务端发送请求、并下载完整的响应。
+
+cache-control: max-age=3600, s-maxage=31536000
+
+**s-maxage 优先级高于 max-age，两者同时出现时，优先考虑 s-maxage。如果 s-maxage 未过期，则向代理服务器请求其缓存内容。**
+
+这个 s-maxage 不像 max-age 一样为大家所熟知。的确，在项目不是特别大的场景下，max-age 足够用了。但在依赖各种代理的大型架构中，我们不得不考虑**代理服务器**的缓存问题。s-maxage 就是用于表示 cache 服务器上（比如 cache CDN）的缓存的有效时间的，并只对 public 缓存有效。s-maxage仅在代理服务器中生效，客户端中我们只考虑max-age。
+* public 与 private
+public 与 private 是针对资源是否能够被代理服务缓存而存在的一组对立概念。
+
+如果我们为资源设置了 public，那么它既可以被浏览器缓存，也可以被代理服务器缓存；如果我们设置了 private，则该资源只能被浏览器缓存。private 为默认值。
+
+#### 协商缓存： 浏览器与服务器合作之下的缓存策略
+协商缓存依赖于服务端与客户端之间的通讯；
+协商缓存机制下，浏览器需要向服务器询问缓存的相关信息，进而判断是重新发起请求，下载完整响应，还是从本地获取缓存的资源。
+如果服务端提示缓存文件未改动（Not Modify),资源则会被重定向到浏览器缓存，**这种情况下网络请求的状态码是304**。
+
+#### 协商缓存的实现： 从last-modified到e-tag
+last-modified保存一个时间戳，如果用户启用了协商缓存，则会在首次返回是在响应头中收到：
+Last-Modified: Fri, 27 Oct 2017 06:35:57 GMT
+
+随后我们发的关于该资源的每次请求，都会带上一个If-modified-since的字段，值正是上一次last-modified的值：
+If-Modified-Since: Fri, 27 Oct 2017 06:35:57 GMT
+服务器接收到这个时间戳后，会比对该时间戳和资源在服务器上的最后修改时间是否一致，从而判断资源是否发生了变化。如果发生了变化，就会返回一个完整的响应内容，并在 Response Headers 中添加新的 Last-Modified 值；否则，返回如上图的 304 响应，Response Headers 不会再添加 Last-Modified 字段。
+
+last-modified的弊端：
+*
+*
