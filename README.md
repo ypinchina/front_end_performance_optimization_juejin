@@ -289,3 +289,19 @@ Push Cache 是指 HTTP2 在 server push 阶段存在的缓存。
 * Push Cache 是缓存的最后一道防线。浏览器只有在 Memory Cache、HTTP Cache 和 Service Worker Cache 均未命中的情况下才会去询问 Push Cache。
 * Push Cache 是一种存在于会话阶段的缓存，当 session 终止时，缓存也随之释放。
 * 不同的页面只要共享了同一个 HTTP2 连接，那么它们就可以共享同一个 Push Cache。
+
+## 存储篇2： 本地存储 —— 从Cookie 到 Web Storage、IndexDB
+
+### Cookie
+在web开发的早起，人们需要亟待解决的一个问题就是状态管理的问题： HTTP协议是一个无状态协议，浏览器向服务器发起一个请求，得到响应之后，故事就结束了，服务器不会记录关于
+客户端的任何信息，如何才能在下次请求的时候，才能让服务器知道“我是我”呢？
+
+Cookie在这样的背景下，应运而生。
+cookie说白了就是一个小小的文本文件，每次请求的时候都需要携带，在客户端和服务器之间传来传去，它可以携带用户信息，当服务器检查 Cookie 的时候，便可以获取到客户端的状态，它是以
+**键值对的形式存在**。
+
+cookie的三个弱点
+1. 太小，仅能存储4KB数据，超过就被裁切
+2. cookie是紧跟域名的，同一个域名下的所有请求，都会携带Cookie。请求一张图片或一个CSS文件也要携带cookie，极大浪费带宽，存储的事不应该由cookie来承担，它本质是用于通讯的。
+
+### Web Storage
