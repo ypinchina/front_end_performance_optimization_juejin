@@ -305,3 +305,17 @@ cookie的三个弱点
 2. cookie是紧跟域名的，同一个域名下的所有请求，都会携带Cookie。请求一张图片或一个CSS文件也要携带cookie，极大浪费带宽，存储的事不应该由cookie来承担，它本质是用于通讯的。
 
 ### Web Storage
+Web Storage是HTML5提出用于解决客户端存储信息的技术
+* 作用域：Local Storage、Session Storage 和 Cookie 都遵循同源策略。但 Session Storage 特别的一点在于，即便是相同域名下的两个页面，只要它们**不在同一个浏览器窗口中打开**，那么它们的 Session Storage 内容便无法共享。
+* 优点
+1. 存储量大 ，容量可达到5-10M之间
+2. 仅存放在浏览器端，不会发生与服务器之间的通信
+* 缺点
+1. 只能存字符串，对象需要转JSON字符串
+2. 存量有限，为解决存量问题需要搬出indexDB
+
+### indexDB
+indexDB是运行在浏览器的一个**非关系型数据库**，存量不会小于250MB。它不仅可以存储字符串，还可以存储二进制数据。
+https://www.kancloud.cn/sllyli/performance/1242198
+
+## 彩蛋篇：CDN 的缓存与回源机制解析
