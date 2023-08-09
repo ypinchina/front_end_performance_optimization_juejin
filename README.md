@@ -392,4 +392,45 @@ JS的功能是**修改**页面,浏览器不清楚JS是否会对页面的结构�
 ## 渲染篇3： 对症下药——DOM 优化原理与基本实践
 
 ### DOM为什么这么慢
-js很快，Js的世界一切都是简单的
+js很快，Js的世界一切都是简单的。但是JS与DOM的交互不是属于JS的独舞，JS和浏览器引擎是两个不同的独立的引擎，相互的交互属于跨界交流，JS与DOM就像两个不同的岛屿，
+交流需要过桥费。过桥费就需要开销，这笔开销不可忽略。所以每次JS对DOM的访问或者操作都会多一次过路费,性能开销就增大。所以，减少对DOM的操作在雅虎军规里并不是空穴来风。  
+
+#### 对 DOM 的修改引发样式的更迭
+
+过桥很慢，到了桥对岸，我们的更改操作带来的结果也很慢。  
+
+很多时候，我们对 DOM 的操作都不会局限于访问，而是为了修改它。当我们对 DOM 的修改会引发它外观（样式）上的改变时，就会触发回流或重绘。  
+
+这个过程本质上还是因为我们对 DOM 的修改触发了渲染树（Render Tree）的变化所导致的：  
+
+* 回流：当我们对 DOM 的修改引发了 DOM 几何尺寸的变化（比如修改元素的宽、高或隐藏元素等）时，浏览器需要重新计算元素的几何属性（其他元素的几何属性和位置也会因此受到影响），然后再将计算的结果绘制出来。这个过程就是回流（也叫重排）。  
+
+* 重绘：当我们对 DOM 的修改导致了样式的变化、却并未影响其几何属性（比如修改了颜色或背景色）时，浏览器不需重新计算元素的几何属性、直接为该元素绘制新的样式（跳过了上图所示的回流环节）。这个过程叫做重绘。
+**回流必定重绘，重绘未必会回流**，两个都会消耗浏览器渲染性能，而回流消耗的性能比重绘更大，因此尽量减少两者的发生是提高性能的关键。
+  
+#### 药到病除：给你的 DOM “提提速”
+* 减少DOM的访问与操作
+使用变量缓存器DOM的节点信息，不要for循环多次访问，也不要对DOM进行多次操作，应该用DOMFragment缓存起对DOM的多次循环操作，最后在用创建的DOMFragment赋值给需要操作的DOM元素。例如
+```
+for(var count=0;count<10000;count++){ 
+  document.getElementById('container').innerHTML+='<span>我是一个小测试</span>'
+} 
+```
+优化为
+```
+let container = document.getElementById('container')
+// 缓存需要操作的DOM节点信息，避免多次访问
+
+// 创建一个DOM Fragment对象作为容器
+let content = document.createDocumentFragment()
+for(let count=0;count<10000;count++){
+  // span此时可以通过DOM API去创建
+  let oSpan = document.createElement("span")
+  oSpan.innerHTML = '我是一个小测试'
+  // 像操作真实DOM一样操作DOM Fragment对象
+  content.appendChild(oSpan)
+}
+// 内容处理好了,最后再触发真实DOM的更改
+container.appendChild(content)
+
+```
