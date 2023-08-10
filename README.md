@@ -450,3 +450,6 @@ container.appendChild(content)
 * **执行渲染操作，更新页面**  
 * 检查是否存在web worker任务，如果有则对其进行处理。  
 （上述过程循环往复，直到两个队列都清空）这就是完整的一个event loop过程  
+#### 生产上的实践
+vue中使用$nextTick来更新状态
+而nextTick方法内部则是使用promise进行异步任务包装，也就是微任务。
