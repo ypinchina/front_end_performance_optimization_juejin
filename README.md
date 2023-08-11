@@ -452,4 +452,22 @@ container.appendChild(content)
 （上述过程循环往复，直到两个队列都清空）这就是完整的一个event loop过程  
 #### 生产上的实践
 vue中使用$nextTick来更新状态
-而nextTick方法内部则是使用promise进行异步任务包装，也就是微任务。
+而nextTick方法内部则是使用promise进行异步任务包装，也就是微任务。  
+
+###渲染篇 5：最后一击——回流（Reflow）与重绘（Repaint）
+
+#### 产生回流（重排）的操作  
+* 最“贵”的操作：改变 DOM 元素的几何属性  
+这个改变几乎可以说是“牵一发动全身”——当一个DOM元素的几何属性发生变化时，所有和它相关的节点（比如父子节点、兄弟节点等）的几何属性都需要进行重新计算，它会带来巨大的计算量。  
+
+常见的几何属性有 width、height、padding、margin、left、top、border 等等。    
+
+* “价格适中”的操作：改变 DOM 树的结构  
+这里主要指的是节点的增减、移动等操作。浏览器引擎布局的过程，顺序上可以类比于树的前序遍历——它是一个从上到下、从左到右的过程。通常在这个过程中，当前元素不会再影响其前面已经遍历过的元素。  
+
+* 最容易被忽略的操作：获取一些特定属性的值  
+当你要用到像这样的属性：offsetTop、offsetLeft、 offsetWidth、offsetHeight、scrollTop、scrollLeft、scrollWidth、scrollHeight、clientTop、clientLeft、clientWidth、clientHeight 时，你就要注意了！  
+
+“像这样”的属性，到底是像什么样？——这些值有一个共性，就是需要通过即时计算得到。因此浏览器为了获取这些值，也会进行回流。  
+
+除此之外，当我们调用了 getComputedStyle 方法，或者 IE 里的 currentStyle 时，也会触发回流。原理是一样的，都为求一个“即时性”和“准确性”。  
