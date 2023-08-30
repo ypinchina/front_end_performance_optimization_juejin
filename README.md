@@ -433,7 +433,7 @@ for(let count=0;count<10000;count++){
 // 内容处理好了,最后再触发真实DOM的更改
 container.appendChild(content)
 ```
-### 渲染篇 4：千方百计——Event Loop 与异步更新策略
+## 渲染篇 4：千方百计——Event Loop 与异步更新策略
 
 #### micro-task 和 macro-task
 为了简化，标题称为微任务和宏任务，下文同。
@@ -571,4 +571,37 @@ container.style.color = 'red'
 注意这个不得已，上文有提到一些特殊的，计算实时几何信息的就会触发浏览器这个“不得已”。
 
 补充： 并不是所有的浏览器都跟chrome一样聪明，所以该优化性能时都需要优化性能，让所有浏览器看起来保持一致。  
+
+## 性能监测篇：Performance、LightHouse 与性能 API  
+
+平时我们比较推崇的性能监测方案主要有两种：**可视化方案**、**可编程方案**。
+
+### 可视化监测：从 Performance 面板说起
+
+ Chrome浏览器F12打开即可看到Performance面板，
+当我们选中图中所标示的实心圆按钮，Performance 会开始帮我们记录我们后续的交互操作；当我们选中圆箭头按钮，Performance 会将页面重新加载，计算加载过程中的性能表现。  
+tips：使用 Performance 工具时，为了规避其它 Chrome 插件对页面的性能影响，我们最好在无痕模式下打开页面  
+
+### 可视化监测： 更加聪明的 LightHouse  
+Performance 无疑可以为我们提供很多有价值的信息，但它的展示作用大于分析作用。它要求使用者对工具本身及其所展示的信息有充分的理解，能够将晦涩的数据“翻译”成具体的性能问题。  
+
+程序员们许了个愿：如果工具能帮助我们把页面的问题也分析出来就好了！上帝听到了这个愿望，于是给了我们 LightHouse：  
+
+`Lighthouse 是一个开源的自动化工具，用于改进网络应用的质量。 你可以将其作为一个 Chrome 扩展程序运行，或从命令行运行。   
+为Lighthouse 提供一个需要审查的网址，它将针对此页面运行一连串的测试，然后生成一个有关页面性能的报告。`  
+* 首先在 Chrome 的应用商店里下载一个 LightHouse。   
+
+* 除了直接下载，我们还可以通过命令行使用 LightHouse：  
+
+```
+npm install -g lighthouse
+lighthouse https://juejin.im/books
+```  
+同样可以得到掘金小册的性能报告。  
+
+* 此外，从 Chrome 60 开始，DevTools 中直接加入了基于 LightHouse 的 Audits 面板：  
+
+LightHouse 因此变得更加触手可及了，这一操作也足以证明 Chrome 团队对 LightHouse 的推崇。  
+
+
 
