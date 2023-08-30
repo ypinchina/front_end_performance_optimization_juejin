@@ -470,4 +470,41 @@ vue中使用$nextTick来更新状态
 
 “像这样”的属性，到底是像什么样？——这些值有一个共性，就是需要通过即时计算得到。因此浏览器为了获取这些值，也会进行回流。  
 
-除此之外，当我们调用了 getComputedStyle 方法，或者 IE 里的 currentStyle 时，也会触发回流。原理是一样的，都为求一个“即时性”和“准确性”。  
+除此之外，当我们调用了 getComputedStyle 方法，或者 IE 里的 currentStyle 时，也会触发回流。原理是一样的，都为求一个“即时性”和“准确性”。    
+
+### 如何规避触发回流和重绘  
+
+了解触发回流和重绘的“导火索”，学会更聪明地使用他们  
+
+#### 将“导火索”缓存起来，避免频繁访问  
+
+上文提到使用访问特殊的几何属性时，会频繁触发回流和重绘 以下的代码：  
+```
+<script>
+  // 获取el元素
+  const el = document.getElementById('el')
+  // 这里循环判定比较简单，实际中或许会拓展出比较复杂的判定需求
+  for(let i=0;i<10;i++) {
+      el.style.top  = el.offsetTop  + 10 + "px";
+      el.style.left = el.offsetLeft + 10 + "px";
+  }
+  </script>
+```
+可以修改成   
+```
+/ 缓存offsetLeft与offsetTop的值
+const el = document.getElementById('el') 
+let offLeft = el.offsetLeft, offTop = el.offsetTop
+
+// 在JS层面进行计算
+for(let i=0;i<10;i++) {
+  offLeft += 10
+  offTop  += 10
+}
+
+// 一次性将计算结果应用到DOM上
+el.style.left = offLeft + "px"
+el.style.top = offTop  + "px"
+
+```
+
