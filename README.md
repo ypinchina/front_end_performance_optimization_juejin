@@ -492,7 +492,7 @@ vue中使用$nextTick来更新状态
 ```
 可以修改成   
 ```
-/ 缓存offsetLeft与offsetTop的值
+// 缓存offsetLeft与offsetTop的值
 const el = document.getElementById('el') 
 let offLeft = el.offsetLeft, offTop = el.offsetTop
 
@@ -507,4 +507,68 @@ el.style.left = offLeft + "px"
 el.style.top = offTop  + "px"
 
 ```
+
+#### 避免逐条改变样式，使用类名去合并样式  
+
+下面类似的代码
+```
+const container = document.getElementById('container')
+container.style.width = '100px'
+container.style.height = '200px'
+container.style.border = '10px solid red'
+container.style.color = 'red'
+```  
+可以改成有一个class加持的样子  
+
+```
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <style>
+    .basic_style {
+      width: 100px;
+      height: 200px;
+      border: 10px solid red;
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <div id="container"></div>
+  <script>
+  const container = document.getElementById('container')
+  container.classList.add('basic_style')
+  </script>
+</body>
+</html>
+
+```  
+前者每次单独操作，都去触发一次渲染树更改，从而导致相应的回流与重绘过程。  
+合并之后，等于我们将所有的更改一次性发出，用一个 style 请求解决掉了。  
+
+#### 将DOM离线化  
+上文所述发生的回流与重绘，前提都是DOM存在于文档流中才会产生开销， 当把DOM元素从页面结构中拿掉时，后续对元素进行的样式的变化将不会产生回流和重绘——这个将元素“拿掉”的操作，就叫做 DOM 离线化。  
+
+在修改元素的其他样式前，先把DOM元素样式属性设置为display:none;  
+但是需要注意性价比，因为把DOM元素从文档流拿掉和再显现出来的操作都会触发回流和重绘，如果只需要很少地改变其他样式的话，离线化的操作就没有多少性价比。  
+
+### Flush 队列：浏览器并没有那么简单
+
+一个问题，以下代码，在Chrome浏览器中一共会触发多少次回流和重绘？  
+```
+let container = document.getElementById('container')
+container.style.width = '100px'
+container.style.height = '200px'
+container.style.border = '10px solid red'
+container.style.color = 'red'
+```
+一般来说，根据上面的知识，一共触发三次回流，一次重绘。但是打开chromeF12面板，看到其实只触发了一次回流和一次重绘。  
+因为浏览器很聪明，他会把这些消耗性能的操作缓存到flush队列中，把我们触发的回流与重绘任务都塞进去，待到队列里的任务多起来、或者达到了一定的时间间隔，或者“不得已”的时候，再将这些任务一口气出队。  
+注意这个不得已，上文有提到一些特殊的，计算实时几何信息的就会触发浏览器这个“不得已”。
+
+补充： 并不是所有的浏览器都跟chrome一样聪明，所以该优化性能时都需要优化性能，让所有浏览器看起来保持一致。  
 
