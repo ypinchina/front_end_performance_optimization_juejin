@@ -604,4 +604,44 @@ lighthouse https://juejin.im/books
 LightHouse 因此变得更加触手可及了，这一操作也足以证明 Chrome 团队对 LightHouse 的推崇。  
 
 
+### 可编程的性能上报方案： W3C 性能 API
 
+W3C 规范为我们提供了 Performance 相关的接口。它允许我们获取到用户访问一个页面的每个阶段的精确时间，从而对性能进行分析。我们可以将其理解为 Performance 面板的进一步细化与可编程化。
+
+主要是performance对象,控制台输入window.performance能看到其下相关属性。
+
+下面给出一些计算时间的例子
+```
+const timing = window.performance.timing
+// DNS查询耗时
+timing.domainLookupEnd - timing.domainLookupStart
+  
+// TCP连接耗时
+timing.connectEnd - timing.connectStart
+ 
+// 内容加载耗时
+timing.responseEnd - timing.requestStart
+
+```
+
+以下是关键性指标：
+```
+// firstbyte：首包时间	
+timing.responseStart – timing.domainLookupStart	
+
+// fpt：First Paint Time, 首次渲染时间 / 白屏时间
+timing.responseEnd – timing.fetchStart
+
+// tti：Time to Interact，首次可交互时间	
+timing.domInteractive – timing.fetchStart
+
+// ready：HTML 加载完成时间，即 DOM 就位的时间
+timing.domContentLoaded – timing.fetchStart
+
+// load：页面完全加载时间
+timing.loadEventStart – timing.fetchStart
+```
+
+此外，通过访问 performance 的 memory 属性，我们还可以获取到内存占用相关的数据
+
+本课完结与2023年10月13日
